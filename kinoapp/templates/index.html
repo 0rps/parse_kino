@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dates</title>
+</head>
+<body>
+    <div>
+        {% for el in dates %}
+        <div>
+            <a href="{{ el.url }}" >{{ el.name }}</a>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
