@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+import re
 
 from bs4 import BeautifulSoup
 from collections import namedtuple, OrderedDict
@@ -8,10 +9,12 @@ from requests import request
 TimePrice = namedtuple('TimePrice', ['time', 'price'])
 RawCinema = namedtuple('RawCinema', ['name', 'link', 'addr'])
 
-ShortFilmInfo = namedtuple('ShortFilmInfo', ['name', 'href', 'info', 'rating'])
+ShortFilmInfo = namedtuple('ShortFilmInfo', ['name', 'movie_id', 'info', 'rating'])
 
 
 class MovieListParser:
+
+    movie_id_regex = re.compile('/(\d+)/$')
 
     def parse(self, str_date):
         afisha_request = 'https://msk.kinoafisha.info/movies/?date%5B0%5D={date}&time=all&liststyle=list'.format(
@@ -29,6 +32,8 @@ class MovieListParser:
             print('Element %s is wrong in parse_movie_info' % el)
             return None
 
+        movie_id = self.movie_id_regex.findall(href)[0]
+
         rating = el.find('span', class_='filmShort_rating')
         name = el.find('span', class_='link_border')
         info = el.find('span', class_='filmShort_info')
@@ -39,7 +44,7 @@ class MovieListParser:
 
         rating = float(rating.string) if rating.string is not None and len(rating.string) != 0 else -1
 
-        return ShortFilmInfo(name.string, href, info.string, rating)
+        return ShortFilmInfo(name.string, movie_id, info.string, rating)
 
 
 class MovieShowtimeParser:

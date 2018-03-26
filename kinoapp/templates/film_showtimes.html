@@ -5,6 +5,14 @@
     <title>Сеансы</title>
 </head>
 <body>
+    <h3>Movie: {{movie}} at {{ date }}</h3>
+    {% for time in showtimes %}
+        <div>
+            <span>Time</span>{{ time.time }} <br>
+            <span> </span>{{ time.price }} р.<br>
+        </div>
+        <br>
+    {% endfor %}
 
 </body>
 </html>
