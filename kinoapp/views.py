@@ -8,7 +8,6 @@ from django.views.decorators.http import require_GET
 from .parser import MovieListParser, MovieShowtimeParser
 
 
-
 @require_GET
 def index(request):
     edate = lambda x: x.strftime('%Y%m%d')

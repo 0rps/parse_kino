@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 import re
+import json
 
 from bs4 import BeautifulSoup
 from collections import namedtuple, OrderedDict
@@ -10,6 +11,73 @@ TimePrice = namedtuple('TimePrice', ['time', 'price'])
 RawCinema = namedtuple('RawCinema', ['name', 'link', 'addr'])
 
 ShortFilmInfo = namedtuple('ShortFilmInfo', ['name', 'movie_id', 'info', 'rating'])
+
+CinemaIdNameMetro = namedtuple('CinemaIdNameMetro', ['cid', 'name', 'metro'])
+CinemaAddressRating = namedtuple('CinemaAddressRating', ['rating', 'votes', 'address'])
+
+
+class CinemaListParser:
+    url = 'https://msk.kinoafisha.info/cinema/'
+
+    def parse(self):
+        response = request('get', self.url)
+        bs = BeautifulSoup(response.text, 'html.parser')
+        cinema_full_div = bs.find_all('div', class_='aboutFav_columns')
+        if len(cinema_full_div) > 0:
+            cinema_full_div = cinema_full_div[0]
+        else:
+            raise Exception('Couldnot parse aboutFav_columns class in div')
+
+        cinema_list = []
+
+        for child in cinema_full_div.children:
+            try:
+                child.attrs['data-param']
+            except (AttributeError, TypeError):
+                continue
+
+            try:
+                data_param = json.loads(child.attrs['data-param'])
+                cinema_id = int(data_param['uid'])
+                cinema_name = child.find('span', class_='link_border').text
+                metro_span = child.find('span', class_='theater_metro')
+                if metro_span is not None:
+                    metro = metro_span.text
+                else:
+                    metro = None
+
+            except (AttributeError, TypeError, KeyError):
+                print("Couldn't parse:  " + str(child))
+                continue
+
+            cinema_list.append(CinemaIdNameMetro(cinema_id, cinema_name, metro))
+
+        return cinema_list
+
+
+class CinemaPageParser:
+    url = 'https://msk.kinoafisha.info/cinema/{}/'
+
+    def parse(self, cinema_id):
+        cinema_url = self.url.format(cinema_id)
+        response = request('get', cinema_url)
+        bs = BeautifulSoup(response.text, 'html.parser')
+
+        rating = None
+        votes = None
+        try:
+            rating_div = bs.find('div', class_='rating_content')
+            rating_raw = rating_div.find('span', class_='rating_num').text
+            rating = float(rating_raw)
+            votes_raw = rating_div.find('span', class_='as-none').text
+            votes = int(votes_raw)
+        except ValueError as e:
+            print('Error: ' + str(e))
+
+        address = bs.find('a', class_='theaterInfo_addr')
+        address = address.span.text
+
+        return CinemaAddressRating(rating, votes, address)
 
 
 class MovieListParser:
@@ -98,4 +166,9 @@ class MovieShowtimeParser:
 
 
 if __name__ == '__main__':
-    shows_dict = MovieShowtimeParser().parse()
+    import time
+    clist = CinemaListParser().parse()
+
+    for i in clist[:5]:
+        time.sleep(1)
+        print(CinemaPageParser().parse(i.cid))
