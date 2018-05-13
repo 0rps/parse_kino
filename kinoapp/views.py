@@ -8,8 +8,16 @@ from django.views.decorators.http import require_GET
 from .parser import MovieListParser, MovieShowtimeParser
 
 
+"""Views module"""
+
 @require_GET
 def index(request):
+    """
+    Main function
+    :param request:
+    :return:
+    """
+
     edate = lambda x: x.strftime('%Y%m%d')
     delta = timedelta(days=1)
     dates = [
@@ -28,6 +36,11 @@ def index(request):
 
 @require_GET
 def films(request):
+    """
+    get films function
+    :param request:
+    :return:
+    """
     date = request.GET.get('date')
     movie_list = MovieListParser().parse(date)
     url = reverse('showtimes_list')
@@ -46,6 +59,11 @@ def films(request):
 
 @require_GET
 def showtimes(request):
+    """
+    get showtimes
+    :param request:
+    :return:
+    """
     date = request.GET.get('date')
     movie_id = request.GET.get('movie')
     showtimes = MovieShowtimeParser().parse(movie_id)
