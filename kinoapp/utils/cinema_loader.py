@@ -5,7 +5,7 @@ from random import random
 
 from kinoapp import models
 from kinoapp.utils import afisha_parser as parser
-from kinoapp.utils.ya_geocoder import get_coordinates
+from kinoapp.utils.geocoder import get_coordinates
 
 logger = getLogger(__file__)
 

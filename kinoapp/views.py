@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta
-import urllib3
 
 from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.http import require_GET
 
-from .parser import MovieListParser, MovieShowtimeParser
+from .utils.afisha_parser import MovieListParser, MovieShowtimeParser
 
 
 @require_GET
@@ -23,8 +22,6 @@ def index(request):
         }]
     return render(request, 'index.html', {'dates': dates})
 
-
-# 'ShortFilmInfo', ['name', 'href', 'info', 'rating'])
 
 @require_GET
 def films(request):
