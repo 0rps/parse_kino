@@ -117,7 +117,7 @@ class MovieListParser:
 
 class MovieShowtimeParser:
 
-    def parse(self, movie_id=8323017):
+    def parse(self, movie_id):
         bs = BeautifulSoup(self.__get_movie_html(movie_id), "html.parser")
         cinema_dict = OrderedDict()
         for showtimes_item in bs.find_all('div', 'showtimes_item'):
