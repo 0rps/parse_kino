@@ -13,11 +13,8 @@ class Command(BaseCommand):
         for min_cinema in self.load_cinema_list():
             afisha_id = min_cinema.cid
 
-            try:
-                models.Cinema.objects.get(pk=afisha_id)
-            except ObjectDoesNotExist:
-                pass
-            else:
+            qs = models.Cinema.objects.filter(afisha_id=afisha_id)
+            if len(qs) > 0:
                 continue
 
             max_cinema = self.load_additional_cinema_info(afisha_id)
@@ -38,7 +35,7 @@ class Command(BaseCommand):
                 else:
                     cinema.rating = max_cinema.rating
             if max_cinema.votes:
-                cinema.votes = max_cinema.votes
+                cinema.votes = max_cinema.votes or 0
             with transaction.atomic():
                 cinema.save()
             self.stdout.write("Добавлен кинотеатр: " + cinema.name)
