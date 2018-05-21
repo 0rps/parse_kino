@@ -7,6 +7,8 @@ class Cinema(models.Model):
     metro = models.CharField(max_length=64)
     votes = models.IntegerField(null=True)
     rating = models.FloatField(null=True)
+    lat = models.FloatField(null=True)
+    lon = models.FloatField(null=True)
 
     afisha_id = models.IntegerField(null=True, db_index=True)
 
