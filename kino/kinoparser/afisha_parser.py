@@ -64,7 +64,7 @@ class CinemaPageParser:
         bs = BeautifulSoup(response.text, 'html.parser')
 
         rating = None
-        votes = None
+        votes = 0
         try:
             rating_div = bs.find('div', class_='rating_content')
             rating_raw = rating_div.find('span', class_='rating_num').text
@@ -117,7 +117,7 @@ class MovieListParser:
 
 class MovieShowtimeParser:
 
-    def parse(self, movie_id=8323017):
+    def parse(self, movie_id):
         bs = BeautifulSoup(self.__get_movie_html(movie_id), "html.parser")
         cinema_dict = OrderedDict()
         for showtimes_item in bs.find_all('div', 'showtimes_item'):

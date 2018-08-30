@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class MainappConfig(AppConfig):
-    name = 'kinoapp'
+    name = 'kino.kinoapp'

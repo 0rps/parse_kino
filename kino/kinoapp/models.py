@@ -1,7 +1,7 @@
 from sqlalchemy import Table, Column, Integer, Unicode, Float, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 
-from baseapp.db import Base
+from config.db import Base
 # engine = create_engine('postgresql+psycopg2://orps:pass1234@localhost/afishadb')
 
 
@@ -17,6 +17,14 @@ class Cinema(Base):
     votes = Column(Integer, default=0)
 
     showtimes = relationship("Showtime")
+
+    def __init__(self, _id, name, address, metro=None, rating=None, votes=0):
+        self.id = _id
+        self.name = name
+        self.address = address
+        self.metro = metro
+        self.rating = rating
+        self.votes = votes
 
 
 class Movie(Base):

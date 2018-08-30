@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from baseapp.db import Base, engine, Session
+from config.db import Base, engine, Session
 from kinoapp import models
 
 

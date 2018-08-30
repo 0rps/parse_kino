@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.decorators.http import require_GET
 
-from .parser import MovieListParser, MovieShowtimeParser
+from kino.parser import MovieListParser, MovieShowtimeParser
 
 
 """Views module"""
