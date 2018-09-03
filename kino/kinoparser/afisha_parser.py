@@ -10,7 +10,7 @@ from requests import request
 TimePrice = namedtuple('TimePrice', ['time', 'price'])
 RawCinema = namedtuple('RawCinema', ['name', 'link', 'addr'])
 
-ShortFilmInfo = namedtuple('ShortFilmInfo', ['name', 'movie_id', 'info', 'rating'])
+ShortFilmInfo = namedtuple('ShortFilmInfo', ['name', 'movie_id', 'info_1', 'info_2'])
 
 CinemaIdNameMetro = namedtuple('CinemaIdNameMetro', ['cid', 'name', 'metro'])
 CinemaAddressRating = namedtuple('CinemaAddressRating', ['rating', 'votes', 'address'])
@@ -20,8 +20,7 @@ class CinemaListParser:
     url = 'https://msk.kinoafisha.info/cinema/'
 
     def parse(self):
-        response = request('get', self.url)
-        bs = BeautifulSoup(response.text, 'html.parser')
+        bs = BeautifulSoup(self.get_movies_page(), 'html.parser')
         cinema_full_div = bs.find_all('div', class_='aboutFav_columns')
         if len(cinema_full_div) > 0:
             cinema_full_div = cinema_full_div[0]
@@ -54,14 +53,16 @@ class CinemaListParser:
 
         return cinema_list
 
+    def get_movies_page(self):
+        response = request('get', self.url)
+        return response.text
+
 
 class CinemaPageParser:
     url = 'https://msk.kinoafisha.info/cinema/{}/'
 
     def parse(self, cinema_id):
-        cinema_url = self.url.format(cinema_id)
-        response = request('get', cinema_url)
-        bs = BeautifulSoup(response.text, 'html.parser')
+        bs = BeautifulSoup(self.get_cinema_page(cinema_id), 'html.parser')
 
         rating = None
         votes = 0
@@ -79,46 +80,54 @@ class CinemaPageParser:
 
         return CinemaAddressRating(rating, votes, address)
 
+    def get_cinema_page(self, cinema_id):
+        cinema_url = self.url.format(cinema_id)
+        response = request('get', cinema_url)
+        content = response.text
+        return content
+
 
 class MovieListParser:
 
     movie_id_regex = re.compile('/(\d+)/$')
 
     def parse(self, str_date):
-        afisha_request = 'https://msk.kinoafisha.info/movies/?date%5B0%5D={date}&time=all&liststyle=list'.format(
-            date=str_date)
-        response = request('get', afisha_request)
 
-        bs = BeautifulSoup(response.text)
-        raw_film_list = bs.find_all('a', class_='filmShort')
+        bs = BeautifulSoup(self.get_movie_list(str_date), 'html.parser')
+        raw_film_list = bs.find_all('div', class_='films_right')
         result_list = list(filter(lambda x: x is not None, map(self.__parse_movie_info, raw_film_list)))
         return result_list
 
+    def get_movie_list(self, str_date):
+        afisha_request = 'https://msk.kinoafisha.info/movies/?date%5B0%5D={date}&time=all&liststyle=list'.format(
+            date=str_date)
+        response = request('get', afisha_request)
+        return response.text
+
     def __parse_movie_info(self, el):
-        href = el.attrs.get('href', None)
+        a_el = el.find('a')
+        href = a_el.attrs.get('href', None)
         if href is None:
             print('Element %s is wrong in parse_movie_info' % el)
             return None
 
         movie_id = self.movie_id_regex.findall(href)[0]
 
-        rating = el.find('span', class_='filmShort_rating')
+        info = el.find_all('span', class_='films_info')
+        info_1, info_2 = info[0], info[1]
         name = el.find('span', class_='link_border')
-        info = el.find('span', class_='filmShort_info')
 
-        if rating is None or name is None or info is None:
+        if info_1 is None or info_2 is None or name is None:
             print('Element %s is wrong in parse_movie_info. No rating, name or info.' % el)
             return None
 
-        rating = float(rating.string) if rating.string is not None and len(rating.string) != 0 else -1
-
-        return ShortFilmInfo(name.string, movie_id, info.string, rating)
+        return ShortFilmInfo(name.string, movie_id, info_1.string, info_2.string)
 
 
 class MovieShowtimeParser:
 
     def parse(self, movie_id):
-        bs = BeautifulSoup(self.__get_movie_html(movie_id), "html.parser")
+        bs = BeautifulSoup(self.get_movie_page(movie_id), "html.parser")
         cinema_dict = OrderedDict()
         for showtimes_item in bs.find_all('div', 'showtimes_item'):
             cinema = self.__extract_cinema(showtimes_item)
@@ -128,7 +137,7 @@ class MovieShowtimeParser:
 
         return cinema_dict
 
-    def __get_movie_html(self, film_id):
+    def get_movie_page(self, film_id):
         html = request('get', 'https://www.kinoafisha.info/movies/%s/' % film_id)
         return html.text
 
