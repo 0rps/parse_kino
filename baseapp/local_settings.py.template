@@ -1,0 +1,8 @@
+DATABASES = {
+    'default': {
+        'NAME': 'afishadb',
+        'ENGINE': 'django.db.backends.psycopg2',
+        'USER': '',
+        'PASSWORD': ''
+    }
+}
